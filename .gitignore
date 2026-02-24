@@ -1,0 +1,26 @@
+# Secrets - never commit these
+.env
+.env.local
+.env.*.local
+
+# Next.js
+.next/
+out/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# General
+.DS_Store
+*.log
+.idea/
+.vscode/
