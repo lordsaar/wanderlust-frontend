@@ -6,6 +6,9 @@ const TRAVEL_STYLES = [
   'Foodie', 'Adventure', 'Cultural', 'Luxury', 'Backpacker', 'Family', 'Romantic'
 ];
 
+const LANGUAGES = ['English', 'Deutsch', 'Français'];
+
+
 export default function Home() {
   const [destination, setDestination] = useState('');
   const [travelStyle, setTravelStyle] = useState('Foodie');
@@ -14,6 +17,7 @@ export default function Home() {
   const [story, setStory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [language, setLanguage] = useState('English');
 
   const generateStory = async () => {
     if (!destination.trim()) return;
@@ -28,7 +32,8 @@ export default function Home() {
           destination,
           travel_style: travelStyle.toLowerCase(),
           duration_days: durationDays,
-          preferences
+          preferences,
+          language
         })
       });
       if (!response.ok) throw new Error('Failed to generate story');
@@ -85,7 +90,24 @@ export default function Home() {
               ))}
             </div>
           </div>
-
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Story language</label>
+            <div className="flex gap-2">
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    language === lang
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                  }`}
+                >
+                  {lang}
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               Duration: {durationDays} {durationDays === 1 ? 'day' : 'days'}
