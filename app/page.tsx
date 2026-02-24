@@ -170,6 +170,12 @@ export default function Home() {
         )}
 
       </div>
+     {/* Footer */}
+      <footer className="text-center mt-12 mb-8 text-slate-500 text-sm">
+        <a href="/impressum" className="hover:text-slate-300 transition-colors">
+          Impressum
+        </a>
+      </footer>
     </main>
   );
 }
