@@ -158,6 +158,16 @@ export default function Home() {
         {/* Story Output */}
         {story && (
           <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8">
+            
+            {/* Copy button */}
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => navigator.clipboard.writeText(story)}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-slate-300 hover:bg-white/20 transition-all"
+              >
+                Copy story ✂️
+              </button>
+            </div>
             <div className="prose prose-invert prose-lg max-w-none">
               {story.split('\n').map((line, i) => {
                 if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold text-blue-300 mt-6 mb-2">{line.replace('## ', '')}</h2>;
