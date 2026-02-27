@@ -51,6 +51,7 @@ export default function Impressum() {
           </h2>
           <div className="text-slate-300 leading-relaxed space-y-2">
             <p className="font-medium text-white">Roland Schaar</p>
+            <p>Rudolf Heigl Gasse 7, 3031 Rekawinkel, Austria</p>
             <p>
               <span className="font-medium text-white">Unternehmensgegenstand:</span>{' '}
               Privates, nicht-kommerzielles Webprojekt
@@ -263,4 +264,16 @@ export default function Impressum() {
           <p className="text-slate-300 leading-relaxed">
             Der Betreiber ist nicht bereit und nicht verpflichtet, an einem
             Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
-            teilzunehmen, da es sich um ein nicht-kom
+            teilzunehmen, da es sich um ein nicht-kommerzielles Projekt handelt.
+          </p>
+        </section>
+
+        <footer className="mt-12 pt-6 border-t border-slate-700/50 text-center">
+          <p className="text-slate-500 text-sm">
+            Stand: {new Date().toLocaleDateString('de-AT', { year: 'numeric', month: 'long' })}
+          </p>
+        </footer>
+      </div>
+    </main>
+  );
+}
