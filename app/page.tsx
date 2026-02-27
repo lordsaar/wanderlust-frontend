@@ -263,9 +263,10 @@ export default function Home() {
                             await fetch(`${API_URL}/api/stories/${s.id}`, { method: "DELETE" })
                             fetchPastStories()
                           }}
-                          className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                          title="Delete story"
                         >
-                          Delete
+                          🗑️
                         </button>
                       </div>
                     </div>
