@@ -16,31 +16,54 @@ export default function Impressum() {
           <h2 className="text-xl font-semibold mb-4 text-white">
             Angaben gemäß § 25 MedienG / § 5 ECG
           </h2>
-          <div className="text-slate-300 leading-relaxed space-y-2">
-            <p className="font-medium text-white">Roland Schaar</p>
-            <p>Rudolf Heigl Gasse 7</p>
-            <p>3031 Rekawinkel</p>
-            <p>Österreich / Austria</p>
-            <p>
-              E-Mail:{' '}
-              <a
-                href="mailto:roland.schaar.at@gmail.com"
-                className="text-blue-400 hover:text-blue-300 underline transition-colors"
-              >
-                roland.schaar.at@gmail.com
-              </a>
-            </p>
-            <p className="mt-3">
-              LinkedIn:{' '}
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex-shrink-0 flex justify-center sm:justify-start">
               <a
                 href="https://www.linkedin.com/in/rolandschaar"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                className="block"
               >
-                linkedin.com/in/rolandschaar
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://media.licdn.com/dms/image/v2/D4D03AQFf5VVxuVNNrQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1718719015498?e=1753920000&v=beta&t=placeholder"
+                  alt="Roland Schaar"
+                  width={120}
+                  height={120}
+                  className="rounded-full border-2 border-slate-600 hover:border-blue-400 transition-colors object-cover w-[120px] h-[120px]"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
               </a>
-            </p>
+            </div>
+            <div className="text-slate-300 leading-relaxed space-y-2">
+              <p className="font-medium text-white">Roland Schaar</p>
+              <p>Rudolf Heigl Gasse 7</p>
+              <p>3031 Rekawinkel</p>
+              <p>Österreich / Austria</p>
+              <p>
+                E-Mail:{' '}
+                <a
+                  href="mailto:roland.schaar.at@gmail.com"
+                  className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                >
+                  roland.schaar.at@gmail.com
+                </a>
+              </p>
+              <p className="mt-3">
+                LinkedIn:{' '}
+                <a
+                  href="https://www.linkedin.com/in/rolandschaar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                >
+                  linkedin.com/in/rolandschaar
+                </a>
+              </p>
+            </div>
           </div>
         </section>
 
