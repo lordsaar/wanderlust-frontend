@@ -18,7 +18,11 @@ npm run build
 npm run lint
 ```
 
-There are no tests in this project.
+# Run tests
+npm test
+
+# Run a single test file
+npm test -- __tests__/page.test.tsx
 
 ## Architecture
 
