@@ -31,7 +31,7 @@ export default function Impressum() {
                   width={120}
                   height={120}
                   className="rounded-full border-2 border-slate-600 hover:border-blue-400 transition-colors object-cover w-[120px] h-[120px]"
-                  style={{ objectPosition: 'top center' }}
+                  style={{ objectPosition: '50% 15%' }}
                 />
               </a>
             </div>
