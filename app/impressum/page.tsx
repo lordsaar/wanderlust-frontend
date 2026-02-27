@@ -28,9 +28,9 @@ export default function Impressum() {
                 <img
                   src="/roland-schaar.jpg"
                   alt="Roland Schaar"
-                  width={120}
-                  height={120}
-                  className="rounded-full border-2 border-slate-600 hover:border-blue-400 transition-colors object-cover w-[120px] h-[120px]"
+                  width={200}
+                  height={200}
+                  className="rounded-full border-2 border-slate-600 hover:border-blue-400 transition-colors object-cover w-[200px] h-[200px]"
                   style={{ objectPosition: '50% 15%' }}
                 />
               </a>
