@@ -26,15 +26,11 @@ export default function Impressum() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="https://media.licdn.com/dms/image/v2/D4D03AQFf5VVxuVNNrQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1718719015498?e=1753920000&v=beta&t=placeholder"
+                  src="/roland-schaar.jpg"
                   alt="Roland Schaar"
                   width={120}
                   height={120}
                   className="rounded-full border-2 border-slate-600 hover:border-blue-400 transition-colors object-cover w-[120px] h-[120px]"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
                 />
               </a>
             </div>
