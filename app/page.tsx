@@ -246,12 +246,28 @@ export default function Home() {
                 {pastStories.map((s) => (
                   <div
                     key={s.id}
-                    onClick={() => setStory(s.content)}
-                    className="bg-slate-700/50 rounded-xl p-4 cursor-pointer hover:bg-slate-600/50 transition-colors"
+                    className="bg-slate-700/50 rounded-xl p-4 hover:bg-slate-600/50 transition-colors"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-white font-medium">{s.destination}</span>
-                      <span className="text-slate-400 text-sm">{new Date(s.created_at).toLocaleDateString()}</span>
+                      <span
+                        className="text-white font-medium cursor-pointer"
+                        onClick={() => setStory(s.content)}
+                      >
+                        {s.destination}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-400 text-sm">{new Date(s.created_at).toLocaleDateString()}</span>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            await fetch(`${API_URL}/api/stories/${s.id}`, { method: "DELETE" })
+                            fetchPastStories()
+                          }}
+                          className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                     <div className="text-slate-400 text-sm mt-1">{s.travel_style} · {s.duration_days} days · {s.language}</div>
                   </div>
