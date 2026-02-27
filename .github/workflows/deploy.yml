@@ -50,6 +50,11 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=3000 \
+            --set-env-vars=NEXTAUTH_URL=https://wanderlust-frontend-wot5c6gzla-ew.a.run.app \
+            --set-env-vars=NEXT_PUBLIC_API_URL=https://wanderlust-backend-wot5c6gzla-ew.a.run.app \
+            --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
+            --set-secrets=GOOGLE_CLIENT_SECRET=google-client-secret:latest \
+            --set-secrets=AUTH_SECRET=auth-secret:latest \
             --quiet
 
       - name: Show deployed URL
