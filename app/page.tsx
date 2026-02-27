@@ -1,88 +1,150 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from "react"
+import { useSession, signIn, signOut } from "next-auth/react"
 
-const TRAVEL_STYLES = [
-  'Foodie', 'Adventure', 'Cultural', 'Luxury', 'Backpacker', 'Family', 'Romantic'
-];
-
-const LANGUAGES = ['English', 'Deutsch', 'Français'];
-
+interface Story {
+  id: string
+  destination: string
+  travel_style: string
+  duration_days: number
+  language: string
+  content: string
+  created_at: string
+}
 
 export default function Home() {
-  const [destination, setDestination] = useState('');
-  const [travelStyle, setTravelStyle] = useState('Foodie');
-  const [durationDays, setDurationDays] = useState(3);
-  const [preferences, setPreferences] = useState('');
-  const [story, setStory] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [language, setLanguage] = useState('English');
+  const { data: session, status } = useSession()
+  const [destination, setDestination] = useState("")
+  const [travelStyle, setTravelStyle] = useState("Cultural")
+  const [language, setLanguage] = useState("English")
+  const [duration, setDuration] = useState(3)
+  const [preferences, setPreferences] = useState("")
+  const [story, setStory] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [copied, setCopied] = useState(false)
+  const [pastStories, setPastStories] = useState<Story[]>([])
+  const [showHistory, setShowHistory] = useState(false)
 
-  const generateStory = async () => {
-    if (!destination.trim()) return;
-    setLoading(true);
-    setStory('');
-    setError('');
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+  useEffect(() => {
+    if (session) {
+      fetchPastStories()
+    }
+  }, [session])
+
+  const fetchPastStories = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/api/stories/`)
+      if (res.ok) {
+        const data = await res.json()
+        setPastStories(data)
+      }
+    } catch {
+      console.error("Failed to fetch past stories")
+    }
+  }
+
+  const handleGenerate = async () => {
+    if (!destination.trim()) {
+      setError("Please enter a destination")
+      return
+    }
+    setLoading(true)
+    setError("")
+    setStory("")
+    try {
+      const res = await fetch(`${API_URL}/api/stories/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           destination,
-          travel_style: travelStyle.toLowerCase(),
-          duration_days: durationDays,
+          travel_style: travelStyle,
+          duration_days: duration,
+          language,
           preferences,
-          language
-        })
-      });
-      if (!response.ok) throw new Error('Failed to generate story');
-      const data = await response.json();
-      setStory(data.content);
-    } catch (err) {
-      setError('Something went wrong. Is the backend running?');
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to generate story")
+      const data = await res.json()
+      setStory(data.content)
+      fetchPastStories()
+    } catch {
+      setError("Something went wrong. Is the backend running?")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(story)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const travelStyles = ["Foodie", "Adventure", "Cultural", "Luxury", "Backpacker", "Family", "Romantic"]
+  const languages = ["English", "Deutsch", "Français"]
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 p-4 md:p-8">
+      <div className="max-w-3xl mx-auto">
 
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-300 to-emerald-300 bg-clip-text text-transparent">
-            Wanderlust
-          </h1>
-          <p className="text-slate-400 text-lg">Your journey, told as a story</p>
+        {/* Header with auth */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              Wanderlust
+            </h1>
+            <p className="text-slate-400 mt-1">Your journey, told as a story</p>
+          </div>
+          <div>
+            {status === "loading" ? null : session ? (
+              <div className="flex items-center gap-3">
+                <span className="text-slate-300 text-sm">{session.user?.email}</span>
+                <button
+                  onClick={() => signOut()}
+                  className="px-4 py-2 text-sm bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => signIn("google")}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+              >
+                Sign in with Google
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Form */}
-        <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 mb-8 space-y-6">
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Where are you going?</label>
+        {/* Main form */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-xl mb-6">
+          <div className="mb-4">
+            <label className="block text-slate-300 text-sm font-medium mb-2">Where are you going?</label>
             <input
               type="text"
               value={destination}
-              onChange={e => setDestination(e.target.value)}
-              placeholder="Tokyo, Patagonia, Vienna..."
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="e.g. Tokyo, Paris, Hinterstoder..."
+              className="w-full bg-slate-700/50 text-white rounded-xl px-4 py-3 border border-slate-600/50 focus:outline-none focus:border-blue-500"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Travel style</label>
+          <div className="mb-4">
+            <label className="block text-slate-300 text-sm font-medium mb-2">Travel style</label>
             <div className="flex flex-wrap gap-2">
-              {TRAVEL_STYLES.map(style => (
+              {travelStyles.map((style) => (
                 <button
                   key={style}
                   onClick={() => setTravelStyle(style)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     travelStyle === style
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50"
                   }`}
                 >
                   {style}
@@ -90,17 +152,18 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Story language</label>
+
+          <div className="mb-4">
+            <label className="block text-slate-300 text-sm font-medium mb-2">Story language</label>
             <div className="flex gap-2">
-              {LANGUAGES.map(lang => (
+              {languages.map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setLanguage(lang)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     language === lang
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                      ? "bg-green-600 text-white"
+                      : "bg-slate-700/50 text-slate-300 hover:bg-slate-600/50"
                   }`}
                 >
                   {lang}
@@ -108,84 +171,101 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Duration: {durationDays} {durationDays === 1 ? 'day' : 'days'}
-            </label>
+
+          <div className="mb-4">
+            <label className="block text-slate-300 text-sm font-medium mb-2">Duration: {duration} {duration === 1 ? "day" : "days"}</label>
             <input
               type="range"
-              min={1}
-              max={14}
-              value={durationDays}
-              onChange={e => setDurationDays(Number(e.target.value))}
-              className="w-full accent-blue-400"
+              min="1"
+              max="14"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full accent-blue-500"
             />
-            <div className="flex justify-between text-xs text-slate-500 mt-1">
+            <div className="flex justify-between text-slate-500 text-xs mt-1">
               <span>1 day</span>
               <span>14 days</span>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Personal preferences <span className="text-slate-500">(optional)</span>
-            </label>
+          <div className="mb-6">
+            <label className="block text-slate-300 text-sm font-medium mb-2">Personal preferences <span className="text-slate-500">(optional)</span></label>
             <input
               type="text"
               value={preferences}
-              onChange={e => setPreferences(e.target.value)}
-              placeholder="I love local markets, hate tourist traps, traveling with kids..."
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setPreferences(e.target.value)}
+              placeholder="e.g. vegetarian, budget traveler, love museums..."
+              className="w-full bg-slate-700/50 text-white rounded-xl px-4 py-3 border border-slate-600/50 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <button
-            onClick={generateStory}
-            disabled={loading || !destination.trim()}
-            className="w-full py-4 rounded-xl font-semibold text-lg transition-all bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-400 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={handleGenerate}
+            disabled={loading}
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-500 hover:to-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Writing your story...' : 'Generate My Story ✈️'}
+            {loading ? "Generating your story..." : "Generate My Story ✈️"}
           </button>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mb-8 text-red-300">
+          <div className="bg-red-900/30 border border-red-700/50 text-red-300 rounded-xl p-4 mb-6">
             {error}
           </div>
         )}
 
-        {/* Story Output */}
+        {/* Story output */}
         {story && (
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8">
-            
-            {/* Copy button */}
-            <div className="flex justify-end mb-4">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-xl mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Your Story</h2>
               <button
-                onClick={() => navigator.clipboard.writeText(story)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-slate-300 hover:bg-white/20 transition-all"
+                onClick={handleCopy}
+                className="px-4 py-2 text-sm bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors"
               >
-                Copy story ✂️
+                {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <div className="prose prose-invert prose-lg max-w-none">
-              {story.split('\n').map((line, i) => {
-                if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold text-blue-300 mt-6 mb-2">{line.replace('## ', '')}</h2>;
-                if (line.startsWith('# ')) return <h1 key={i} className="text-2xl font-bold text-white mb-4">{line.replace('# ', '')}</h1>;
-                if (line.trim() === '') return <br key={i} />;
-                return <p key={i} className="text-slate-300 leading-relaxed mb-3">{line}</p>;
-              })}
-            </div>
+            <div className="text-slate-300 leading-relaxed whitespace-pre-wrap">{story}</div>
           </div>
         )}
 
+        {/* Past stories */}
+        {session && pastStories.length > 0 && (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-xl mb-6">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex justify-between items-center w-full"
+            >
+              <h2 className="text-xl font-semibold text-white">Your Story History ({pastStories.length})</h2>
+              <span className="text-slate-400">{showHistory ? "▲" : "▼"}</span>
+            </button>
+            {showHistory && (
+              <div className="mt-4 space-y-3">
+                {pastStories.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => setStory(s.content)}
+                    className="bg-slate-700/50 rounded-xl p-4 cursor-pointer hover:bg-slate-600/50 transition-colors"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-medium">{s.destination}</span>
+                      <span className="text-slate-400 text-sm">{new Date(s.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="text-slate-400 text-sm mt-1">{s.travel_style} · {s.duration_days} days · {s.language}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="text-center text-slate-600 text-sm">
+          <a href="/impressum" className="hover:text-slate-400 transition-colors">Impressum</a>
+        </footer>
       </div>
-     {/* Footer */}
-      <footer className="text-center mt-12 mb-8 text-slate-500 text-sm">
-        <a href="/impressum" className="hover:text-slate-300 transition-colors">
-          Impressum
-        </a>
-      </footer>
     </main>
-  );
+  )
 }
