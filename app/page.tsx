@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession, signIn, signOut } from "next-auth/react"
+import { translations, UILanguage } from "@/lib/i18n/translations"
 
 interface Story {
   id: string
@@ -13,8 +14,11 @@ interface Story {
   created_at: string
 }
 
+const UI_LANG_STORAGE_KEY = "wanderlust-ui-language"
+
 export default function Home() {
   const { data: session, status } = useSession()
+  const [uiLang, setUiLang] = useState<UILanguage>("de")
   const [destination, setDestination] = useState("")
   const [travelStyle, setTravelStyle] = useState("Cultural")
   const [language, setLanguage] = useState("English")
@@ -27,7 +31,28 @@ export default function Home() {
   const [pastStories, setPastStories] = useState<Story[]>([])
   const [showHistory, setShowHistory] = useState(false)
 
+  const t = translations[uiLang]
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(UI_LANG_STORAGE_KEY)
+      if (stored && (stored === "de" || stored === "en" || stored === "fr")) {
+        setUiLang(stored as UILanguage)
+      }
+    } catch {
+      // localStorage unavailable
+    }
+  }, [])
+
+  const changeUiLang = (lang: UILanguage) => {
+    setUiLang(lang)
+    try {
+      localStorage.setItem(UI_LANG_STORAGE_KEY, lang)
+    } catch {
+      // localStorage unavailable
+    }
+  }
 
   useEffect(() => {
     if (session) {
@@ -49,7 +74,7 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (!destination.trim()) {
-      setError("Please enter a destination")
+      setError(t.destinationError)
       return
     }
     setLoading(true)
@@ -72,7 +97,7 @@ export default function Home() {
       setStory(data.content)
       fetchPastStories()
     } catch {
-      setError("Something went wrong. Is the backend running?")
+      setError(t.genericError)
     } finally {
       setLoading(false)
     }
@@ -86,10 +111,34 @@ export default function Home() {
 
   const travelStyles = ["Foodie", "Adventure", "Cultural", "Luxury", "Backpacker", "Family", "Romantic"]
   const languages = ["English", "Deutsch", "Français"]
+  const uiLanguages: { code: UILanguage; label: string }[] = [
+    { code: "de", label: "DE" },
+    { code: "en", label: "EN" },
+    { code: "fr", label: "FR" },
+  ]
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 p-4 md:p-8">
       <div className="max-w-3xl mx-auto">
+
+        {/* UI Language selector */}
+        <div className="flex justify-end mb-2">
+          <div className="flex gap-1">
+            {uiLanguages.map(({ code, label }) => (
+              <button
+                key={code}
+                onClick={() => changeUiLang(code)}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  uiLang === code
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700/50 text-slate-400 hover:bg-slate-600/50 hover:text-slate-200"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Header with auth */}
         <div className="flex justify-between items-center mb-8">
@@ -97,7 +146,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
               Wanderlust
             </h1>
-            <p className="text-slate-400 mt-1">Your journey, told as a story</p>
+            <p className="text-slate-400 mt-1">{t.subtitle}</p>
           </div>
           <div>
             {status === "loading" ? null : session ? (
@@ -107,7 +156,7 @@ export default function Home() {
                   onClick={() => signOut()}
                   className="px-4 py-2 text-sm bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors"
                 >
-                  Sign out
+                  {t.signOut}
                 </button>
               </div>
             ) : (
@@ -115,7 +164,7 @@ export default function Home() {
                 onClick={() => signIn("google")}
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
               >
-                Sign in with Google
+                {t.signIn}
               </button>
             )}
           </div>
@@ -124,18 +173,18 @@ export default function Home() {
         {/* Main form */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-xl mb-6">
           <div className="mb-4">
-            <label className="block text-slate-300 text-sm font-medium mb-2">Where are you going?</label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">{t.destinationLabel}</label>
             <input
               type="text"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              placeholder="e.g. Tokyo, Paris, Hinterstoder..."
+              placeholder={t.destinationPlaceholder}
               className="w-full bg-slate-700/50 text-white rounded-xl px-4 py-3 border border-slate-600/50 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-slate-300 text-sm font-medium mb-2">Travel style</label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">{t.travelStyleLabel}</label>
             <div className="flex flex-wrap gap-2">
               {travelStyles.map((style) => (
                 <button
@@ -154,7 +203,7 @@ export default function Home() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-slate-300 text-sm font-medium mb-2">Story language</label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">{t.storyLanguageLabel}</label>
             <div className="flex gap-2">
               {languages.map((lang) => (
                 <button
@@ -173,7 +222,9 @@ export default function Home() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-slate-300 text-sm font-medium mb-2">Duration: {duration} {duration === 1 ? "day" : "days"}</label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">
+              {t.durationLabel}: {duration} {duration === 1 ? t.day : t.days}
+            </label>
             <input
               type="range"
               min="1"
@@ -183,18 +234,20 @@ export default function Home() {
               className="w-full accent-blue-500"
             />
             <div className="flex justify-between text-slate-500 text-xs mt-1">
-              <span>1 day</span>
-              <span>14 days</span>
+              <span>1 {t.day}</span>
+              <span>14 {t.days}</span>
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-slate-300 text-sm font-medium mb-2">Personal preferences <span className="text-slate-500">(optional)</span></label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">
+              {t.preferencesLabel} <span className="text-slate-500">{t.preferencesOptional}</span>
+            </label>
             <input
               type="text"
               value={preferences}
               onChange={(e) => setPreferences(e.target.value)}
-              placeholder="e.g. vegetarian, budget traveler, love museums..."
+              placeholder={t.preferencesPlaceholder}
               className="w-full bg-slate-700/50 text-white rounded-xl px-4 py-3 border border-slate-600/50 focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -204,7 +257,7 @@ export default function Home() {
             disabled={loading}
             className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-500 hover:to-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Generating your story..." : "Generate My Story ✈️"}
+            {loading ? t.generatingButton : t.generateButton}
           </button>
         </div>
 
@@ -219,12 +272,12 @@ export default function Home() {
         {story && (
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-xl mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Your Story</h2>
+              <h2 className="text-xl font-semibold text-white">{t.yourStory}</h2>
               <button
                 onClick={handleCopy}
                 className="px-4 py-2 text-sm bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors"
               >
-                {copied ? "Copied!" : "Copy"}
+                {copied ? t.copied : t.copy}
               </button>
             </div>
             <div className="text-slate-300 leading-relaxed whitespace-pre-wrap">{story}</div>
@@ -238,7 +291,7 @@ export default function Home() {
               onClick={() => setShowHistory(!showHistory)}
               className="flex justify-between items-center w-full"
             >
-              <h2 className="text-xl font-semibold text-white">Your Story History ({pastStories.length})</h2>
+              <h2 className="text-xl font-semibold text-white">{t.yourStoryHistory} ({pastStories.length})</h2>
               <span className="text-slate-400">{showHistory ? "▲" : "▼"}</span>
             </button>
             {showHistory && (
@@ -270,7 +323,7 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-slate-400 text-sm mt-1">{s.travel_style} · {s.duration_days} days · {s.language}</div>
+                    <div className="text-slate-400 text-sm mt-1">{s.travel_style} · {s.duration_days} {s.duration_days === 1 ? t.day : t.days} · {s.language}</div>
                   </div>
                 ))}
               </div>
@@ -280,7 +333,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="text-center text-slate-600 text-sm">
-          <a href="/impressum" className="hover:text-slate-400 transition-colors">Impressum</a>
+          <a href="/impressum" className="hover:text-slate-400 transition-colors">{t.impressum}</a>
         </footer>
       </div>
     </main>
