@@ -406,4 +406,9 @@ export default function Impressum() {
               {t.aiVerify} <span className="font-medium text-white">{t.aiAll}</span>{' '}
               {t.aiVerifyText}
             </p>
-          
+                    </div>
+        </section>
+      </div>
+    </main>
+  )
+}
